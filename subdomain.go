@@ -8,9 +8,6 @@ import (
 	"net/http"
 )
 
-var (
-	wordPtr *string
-)
 
 func getCrtSh(host string) {
 
@@ -39,11 +36,8 @@ func getCrtSh(host string) {
 	fmt.Println(q.Encode(), err)
 }
 
-func init() {
-	wordPtr = flag.String("h", "facebook.com", "hostname")
-}
-
 func main() {
+	wordPtr := flag.String("h", "facebook.com", "hostname")
 	flag.Parse()
 	fmt.Println(*wordPtr)
 	getCrtSh(*wordPtr)
