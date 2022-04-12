@@ -1,4 +1,4 @@
-package main
+package subdomain
 
 import (
 	"encoding/json"
