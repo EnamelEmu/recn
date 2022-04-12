@@ -29,6 +29,8 @@ func readapiandcx(inputJson []byte) {
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
+	cseapi = xgglconfig.cseapiConf
+	cxapi = xgglconfig.cxapiConf
 }
 
 // exact terms, exclude terms, filetype, linksite, sitesearch
@@ -38,6 +40,7 @@ func getCse(query string) () {
 }
 
 func main() {
+	var cFlag = flag.String("c", "./creds.json", "cx id and api keys for google custom search engine service")
 	flag.Parse()
 	stat, _ := os.Stdin.Stat()
 	if(stat.Mode() & os.ModeCharDevice) != 0 {
@@ -46,7 +49,7 @@ func main() {
 	}
 	s := bufio.NewScanner(os.Stdin)
 	for s.Scan() {
-		url := s.Text()
+		 := s.Text()
 
 	}
 }
