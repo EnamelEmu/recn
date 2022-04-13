@@ -1,7 +1,6 @@
 package dork
 
 import (
-	//"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -21,7 +20,14 @@ type gglConfig struct {
 }
 
 type gglResponse struct {
+	link string
+	title string
+}
 
+type links []*gglResponse
+
+func (link gglResponse) retValues() string {
+	return link.link + link.title
 }
 
 func helper() {
@@ -29,7 +35,10 @@ func helper() {
 }
 
 func readapiandcx(path string) error {
-
+	if path == "" {
+		helper()
+		return nil
+	}
 	dat, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -48,7 +57,7 @@ func readapiandcx(path string) error {
 // exact terms, exclude terms, filetype, linksite, sitesearch
 
 func getCse(query string) ([]byte, error) {
-	resp, err := http.Get("https://customsearch.googleapis.com/customsearch/v1?key=" + cseapi + "&cx=" + cxid + "&exactTerms=" + query)
+	resp, err := http.Get("https://customsearch.googleapis.com/customsearch/v1?key=" + cseapi + "&cx=" + cxid + "&filter=0" + "&exactTerms=" + query)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return nil, err
@@ -63,12 +72,19 @@ func getCse(query string) ([]byte, error) {
 }
 
 func parseCse(query string) error {
-	fmt.Println("nil")
+	var linktr links
+	resp, err := getCse(query)
+	if err = json.Unmarshal(resp, &linktr); err != nil {
+		return  err
+	}
+	for _, linkvalue := range linktr {
+		fmt.Println(linkvalue.retValues())
+	}
 	return nil
 }
 
 func main() {
-	//var cFlag = flag.String("c", "", "cx id and api keys for google custom search engine service")
+	var cFlag = flag.String("c", "", "config file")
 	flag.Parse()
 
 }
