@@ -1,4 +1,4 @@
-package dork
+package main
 
 import (
 	"encoding/json"
@@ -15,19 +15,22 @@ var (
 )
 
 type gglConfig struct {
-	cseapiConf string
-	cxidConf string
+	CseapiConf string `json:"cseapi"`
+	Cxidconf string `json:"cxid"`
 }
 
-type gglResponse struct {
-	link string
-	title string
+type gglResponseItems struct {
+	Links []struct {
+		Link string `json:"link"`
+		Title string `json:"title"`
+		json.RawMessage
+	} `json:"items"`
 }
 
-type links []*gglResponse
+type Links []*gglResponseItems
 
-func (link gglResponse) retValues() string {
-	return link.link + link.title
+func (link gglResponseItems) retValues() string {
+	return link.Links[0].Link + link.Links[0].Title
 }
 
 func helper() {
@@ -41,22 +44,24 @@ func readapiandcx(path string) error {
 	}
 	dat, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Erraor:", err)
 	}
 	inputJson := []byte(dat)
 	var xgglconfig gglConfig
-	err2 := json.Unmarshal(inputJson, xgglconfig)
+	err2 := json.Unmarshal(inputJson, &xgglconfig)
 	if err2 != nil {
-		fmt.Println("Error: ", err)
+		fmt.Println(string(inputJson))
+		fmt.Println("Error: ", err2)
 	}
-	cseapi = xgglconfig.cseapiConf
-	cxid = xgglconfig.cxidConf
+	cseapi = xgglconfig.CseapiConf
+	cxid = xgglconfig.Cxidconf
 	return nil
 }
 
 // exact terms, exclude terms, filetype, linksite, sitesearch
 
 func getCse(query string) ([]byte, error) {
+
 	resp, err := http.Get("https://customsearch.googleapis.com/customsearch/v1?key=" + cseapi + "&cx=" + cxid + "&filter=0" + "&exactTerms=" + query)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -72,19 +77,24 @@ func getCse(query string) ([]byte, error) {
 }
 
 func parseCse(query string) error {
-	var linktr links
+	var linktr gglResponseItems
+
 	resp, err := getCse(query)
 	if err = json.Unmarshal(resp, &linktr); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		return  err
 	}
-	for _, linkvalue := range linktr {
-		fmt.Println(linkvalue.retValues())
+	for _, linkvalue := range linktr.Links {
+		fmt.Println(linkvalue.Link, linkvalue.Title)
 	}
+
 	return nil
 }
 
 func main() {
 	var cFlag = flag.String("c", "", "config file")
 	flag.Parse()
-
+	readapiandcx(*cFlag)
+	lastarg := os.Args[len(os.Args)-1]
+	parseCse(lastarg)
 }

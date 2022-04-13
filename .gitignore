@@ -3,3 +3,5 @@ subdomain.exe
 recn.exe
 /subdomain
 google.json
+/src/dork/*.json
+/src/dork/dork
