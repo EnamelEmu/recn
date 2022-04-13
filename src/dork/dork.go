@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"os"
 )
 
@@ -60,9 +61,10 @@ func readapiandcx(path string) error {
 
 // exact terms, exclude terms, filetype, linksite, sitesearch
 
-func getCse(query string) ([]byte, error) {
+func getCse(query string, count int) ([]byte, error) {
+	fmt.Println(count)
 
-	resp, err := http.Get("https://customsearch.googleapis.com/customsearch/v1?key=" + cseapi + "&cx=" + cxid + "&filter=0" + "&exactTerms=" + query)
+	resp, err := http.Get("https://customsearch.googleapis.com/customsearch/v1?key=" + cseapi + "&cx=" + cxid + "&count=22" + "start=" + strconv.Itoa(count) + "&filter=0" + "&exactTerms=" + query)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return nil, err
@@ -78,16 +80,16 @@ func getCse(query string) ([]byte, error) {
 
 func parseCse(query string) error {
 	var linktr gglResponseItems
-
-	resp, err := getCse(query)
-	if err = json.Unmarshal(resp, &linktr); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return  err
+	for i:= 11; i <= 91; i = i + 10 {
+		resp, err := getCse(query, i)
+		if err = json.Unmarshal(resp, &linktr); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return  err
+		}
+		for _, linkvalue := range linktr.Links {
+			fmt.Println(linkvalue.Link, linkvalue.Title)
+		}
 	}
-	for _, linkvalue := range linktr.Links {
-		fmt.Println(linkvalue.Link, linkvalue.Title)
-	}
-
 	return nil
 }
 
